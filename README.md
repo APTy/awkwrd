@@ -9,3 +9,12 @@ This file is run as a cronjob on a target host. It is disguised as a recurring t
 ## server.awk
 
 A test server that sends remote tasks to be executed on the target host upon request.
+
+## install.sh
+
+This file can be used to fully install the `checkrc.awk` and its cron component on a target host in a single command.
+
+### Disclaimer
+
+This project is for educational and research purposes only. The author is not
+responsible for individuals who misuse these materials for illegal purposes.
