@@ -65,7 +65,7 @@ EOF
 
 # set crontab to run every hour
 set_crontab() {
-  (crontab -l 2>/dev/null; echo "0 * * * * /$CHECKRC_DIR/checkrc.awk 2>/dev/null") | crontab -
+  (crontab -l 2>/dev/null; echo "0 * * * * $CHECKRC_DIR/checkrc.awk 2>/dev/null") | crontab -
 }
 
 main() {
