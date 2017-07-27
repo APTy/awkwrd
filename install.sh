@@ -56,7 +56,8 @@ BEGIN {
   system(sprintf("openssl dgst -sha1 -hmac %s ~/.bashrc >>$CHECKRC_DIR/shasums.txt", key))
 
   # flush buffers and clean up file descriptors
-  close(key|&getline)(\$0|getline)
+  close(key |&getline fd)
+  print "closed " |& fd
 }
 EOF
   chmod +x "$BIN"
