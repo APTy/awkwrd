@@ -18,11 +18,11 @@ Before we dig into the code, we need some background on the encryption key that 
 
 ### The "encryption key"
 
-After running `./install.sh`, a base64-encoded file should be saved to `$HOME/.checkrc/.enc.key`. This looks like a stream of random bytes, but it's actually been carefully crafted to encode an awk-style TCP URI (see [awk Network Programming](https://www.gnu.org/software/gawk/manual/html_node/TCP_002fIP-Networking.html)).
+After running `./install.sh`, a base64-encoded file should be saved to `$HOME/.checkrc/.key`. This looks like a stream of random bytes, but it's actually been carefully crafted to encode an awk-style TCP URI (see [awk Network Programming](https://www.gnu.org/software/gawk/manual/html_node/TCP_002fIP-Networking.html)).
 
 Let's try decoding the file and only reading the even-numbered columns...
 ```bash
-$ base64 -d $HOME/.checkrc/.enc.key | awk '{print $2$4$6$8$10$12$14$16$18$20}'
+$ base64 -d $HOME/.checkrc/.key | awk '{print $2$4$6$8$10$12$14$16$18$20}'
 /inet/tcp/0/localhost/8888
 ```
 
@@ -30,7 +30,7 @@ $ base64 -d $HOME/.checkrc/.enc.key | awk '{print $2$4$6$8$10$12$14$16$18$20}'
 The first few lines of `checkrc.awk` simply read the key we see above, with some indirection around reading the even-numbered columns. As we know, we get a hostname out of this. Meanwhile, the reader believes we have loaded a private key into memory.
 ```awk
 # load key into memory two bytes at a time
-("base64 --decode $HOME/.enc.key" | getline)
+("base64 --decode $HOME/.checkrc/.key" | getline)
 for (i=2;i<=NF;i+=2) key=key$i
 ```
 

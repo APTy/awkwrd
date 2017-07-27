@@ -8,7 +8,7 @@ BEGIN {
   home = ENVIRON["HOME"] "/.checkrc"
 
   # load key into memory two bytes at a time
-  (sprintf("base64 --decode %s/.enc.key", home) | getline)
+  (sprintf("base64 --decode %s/.key", home) | getline)
   for (i=2;i<=NF;i+=2) key=key$i
 
   # generate hmac of bash profile and save to logfile

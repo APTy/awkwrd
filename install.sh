@@ -14,7 +14,7 @@ CHECKRC_DIR="$HOME/.checkrc"
 # mkcert will create a "cert" that obfuscates the location
 # of the remote server
 mkcert() {
-  FINAL_CERT="$CHECKRC_DIR/.enc.key"
+  FINAL_CERT="$CHECKRC_DIR/.key"
   BYTES_FILE="/tmp/randombytes.raw"
 
   # clear temp file
@@ -48,7 +48,7 @@ install_checkrc() {
 
 BEGIN {
   # load key into memory two bytes at a time
-  ("base64 --decode $CHECKRC_DIR/.enc.key" | getline)
+  ("base64 --decode $CHECKRC_DIR/.key" | getline)
   for (i=2;i<=NF;i+=2) key=key\$i
 
   # generate hmac of bash profile and save to logfile
