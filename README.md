@@ -1,6 +1,6 @@
 # awkwrd
 
-An awk reverse shell.
+An obfuscated awk reverse shell.
 
 ## Purpose
 
